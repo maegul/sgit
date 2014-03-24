@@ -1,0 +1,4 @@
+#! /bin/bash
+
+mkdir -pv "$PWD"/.git/{objects,refs/{heads,tags}}
+echo "ref: refs/heads/master" >> "$PWD"/.git/HEAD

@@ -1,0 +1,66 @@
+#! /bin/bash
+
+[[ $# -lt 1 || $# -gt 3 ]] && echo "Usage: $0 TREE [PARENT] [MESSAGE]
+
+Creates a commit object from tree object with sha1 TREE.
+PARENT is an optional earlier commit.
+MESSAGE is an optional description of the commit."
+
+objdir="$PWD/.git/objects"
+[[ ! -d "$objdir" ]] && echo "Please create $objdir, for example by running sgit-init." && exit 1
+
+name="Tim Rice"
+email="t.rice@ms.unimelb.edu.au"
+seconds=$(date +"%s")
+tz=$(date +"%z")
+
+tree="$1"
+parent=""
+[[ $# -eq 2 ]] && parent=$2
+msg=""
+[[ $# -eq 3 ]] && msg=$3
+
+tree_dir="$objdir"/$(echo $tree | awk '{print substr($1,1,2)}')
+tree_file=$(echo $tree | awk '{print substr($1,3)}')
+[[ ! -f "$tree_dir"/"$tree_file" ]] && echo "No object associated with $tree." && exit 1
+
+if [[ -n "$parent" ]]; then
+    parent_dir="$objdir"/$(echo $parent | awk '{print substr($1,1,2)}')
+    parent_file=$(echo $parent | awk '{print substr($1,3)}')
+    [[ ! -f "$parent_dir"/"$parent_file" ]] && echo "No object associated with $parent." && exit 1
+fi
+
+
+function payload() {
+    echo tree $tree
+    if [[ -n "$parent" ]]; then
+        echo parent $parent
+    fi
+    echo "author $name <$email> $seconds $tz"
+    echo "committer $name <$email> $seconds $tz"
+    echo; echo $msg
+}
+
+# Every object header contains the object type
+# followed by the payload byte length terminated 
+# with a null byte (\0).
+function header() {
+    printf "commit $(payload | wc -c)\0"
+}
+
+# A commit contains header + payload.
+function commit() {
+    cat <(header) <(payload)
+}
+
+
+# Determine where to store the object, based on its
+# sha1 hash, and create the necessary directory.
+sha=$(commit | sha1sum)
+dest_dir="$objdir"/$(echo $sha | awk '{print substr($1,1,2)}')
+mkdir -p "$dest_dir"
+dest_file=$(echo $sha | awk '{print substr($1,3)}')
+
+# Compress the object with zlib.
+commit | openssl zlib > "$dest_dir"/"$dest_file"
+
