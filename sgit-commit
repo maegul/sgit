@@ -9,8 +9,8 @@ MESSAGE is an optional description of the commit."
 objdir="$PWD/.git/objects"
 [[ -d "$objdir" ]] || echo "Please create $objdir, for example by running sgit-init." && exit 1
 
-name="$(git config --get user.name)"
-email="$(git config --get user.email)"
+name="$(sgit config --get user.name)"
+email="$(sgit config --get user.email)"
 seconds=$(date +"%s")
 tz=$(date +"%z")
 
