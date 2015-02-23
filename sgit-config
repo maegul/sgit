@@ -1,0 +1,33 @@
+#! /bin/bash
+
+OPT="$1"
+GP="$(echo $2 | cut -d. -f1)"
+FLD="$(echo $2 | cut -d. -f2)"
+VAL="$3"
+
+# Only proceed if arguments make sense.
+[[ ( $OPT == "--get" || ( $OPT == "--set" && $VAL ) )  && $GP && $FLD ]] || {
+    echo "Usage: $0 --set [GROUP].[FIELD] [VALUE]"
+    echo "       $0 --get [GROUP].[FIELD]"
+    exit 1
+}
+
+function sgit_config_set() {
+    tgt_file="$1"
+    after_found="$2"
+    insert_text="$3 = $4"
+    sed -i '/\['"$after_found"'\]/a\    '"$insert_text" "$tgt_file"
+}
+
+function sgit_config_get() { :
+    tgt_file="$1"
+    group="$2"
+    field="$3"
+    awk '/^\[/ {p=0} /^\['"$group"'\]/ {p=1} p' "$tgt_file" | grep "$field" | sed 's/^[[:space:]]*'"$field"'[[:space:]]*=[[:space:]]*//g'
+}
+
+cfg_file=~/.gitconfig
+case $OPT in
+    --get) sgit_config_get "$cfg_file" "$GP" "$FLD" ;;
+    --set) sgit_config_set "$cfg_file" "$GP" "$FLD" "$VAL" ;;
+esac
