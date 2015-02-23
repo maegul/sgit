@@ -18,7 +18,7 @@ function sgit_config_set() {
     field="$3"
     value="$4"
     insert_text="$field = $value"
-    sed -i '/\['"$after_found"'\]/a\    '"$insert_text" "$tgt_file"
+    sed -i '/\['"$group"'\]/a\    '"$insert_text" "$tgt_file"
 }
 
 function sgit_config_get() { :
@@ -28,8 +28,16 @@ function sgit_config_get() { :
     awk '/^\[/ {p=0} /^\['"$group"'\]/ {p=1} p' "$tgt_file" | grep "$field" | sed 's/^[[:space:]]*'"$field"'[[:space:]]*=[[:space:]]*//g'
 }
 
+function sgit_config_unset() { :
+    tgt_file="$1"
+    group="$2"
+    field="$3"
+    sed -i '/^\['"$group"'\]/,/^\[/ {/^[[:space:]]*'"$field"'/d}' "$tgt_file"
+}
+
 cfg_file=~/.gitconfig
 case $OPT in
     --get) sgit_config_get "$cfg_file" "$GP" "$FLD" ;;
     --set) sgit_config_set "$cfg_file" "$GP" "$FLD" "$VAL" ;;
+    --unset) sgit_config_unset "$cfg_file" "$GP" "$FLD" ;;
 esac
