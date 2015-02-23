@@ -6,7 +6,7 @@ FLD="$(echo $2 | cut -d. -f2)"
 VAL="$3"
 
 # Only proceed if arguments make sense.
-[[ ( $OPT == "--get" || ( $OPT == "--set" && $VAL ) )  && $GP && $FLD ]] || {
+[[ ( $OPT == "--get" || $OPT == "--unset" || ( $OPT == "--set" && $VAL ) )  && $GP && $FLD ]] || {
     echo "Usage: $0 --set [GROUP].[FIELD] [VALUE]"
     echo "       $0 --get [GROUP].[FIELD]"
     exit 1
@@ -14,8 +14,10 @@ VAL="$3"
 
 function sgit_config_set() {
     tgt_file="$1"
-    after_found="$2"
-    insert_text="$3 = $4"
+    group="$2"
+    field="$3"
+    value="$4"
+    insert_text="$field = $value"
     sed -i '/\['"$after_found"'\]/a\    '"$insert_text" "$tgt_file"
 }
 
