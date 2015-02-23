@@ -1,10 +1,11 @@
 #! /bin/bash
 
-CMD=$1
-case $CMD in
-    cat) sgit-cat $2 ;;
-    commit) sgit-commit $2 $3 $4 ;;
+CMD="$1"
+case "$CMD" in
+    cat) sgit-cat "$2" ;;
+    commit) sgit-commit "$2" "$3" "$4" ;;
     init) sgit-init ;;
-    mkblob) sgit-mkblob $2 ;;
+    mkblob) sgit-mkblob "$2" ;;
+    config) sgit-config "$2" "$3" "$4" ;;
 esac
 
